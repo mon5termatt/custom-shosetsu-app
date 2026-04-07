@@ -1,0 +1,33 @@
+{
+  "authors": [
+    {
+      "id": 0,
+      "name": "mon5termatt",
+      "desc": "Tasil custom source",
+      "imageURL": "",
+      "website": "https://github.com/mon5termatt/custom-shosetsu-app"
+    }
+  ],
+  "libraries": [
+    {
+      "name": "dkjson",
+      "ver": "1.0.1",
+      "url": null,
+      "hash": "d9814becb1b078e81e24169091335770ca0c5697f864f6d7acb31d88d659fc6b"
+    }
+  ],
+  "scripts": [
+    {
+      "id": 926040,
+      "name": "Tasil (API)",
+      "fileName": "TasilAPI",
+      "imageURL": "",
+      "lang": "en",
+      "ver": "0.1.0",
+      "libVer": "1.0.0",
+      "md5": "a9d523af5c516c47dfabcfa1607e0a64b4b48ff0f8d0a9b2cfbf82c638fe0423",
+      "type": "LuaScript"
+    }
+  ]
+}
+
