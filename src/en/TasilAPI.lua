@@ -1,4 +1,4 @@
--- {"id":926040,"ver":"0.1.0","libVer":"1.0.0","author":"you","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
+-- {"id":926040,"ver":"0.1.1","libVer":"1.0.0","author":"you","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
 
 local json = Require("dkjson")
 
@@ -82,32 +82,36 @@ local listings = {
 }
 
 local function parseNovel(novelURL)
+	Log("TasilAPI", "parseNovel v0.1.1 url=" .. tostring(novelURL))
 	local url = expandURL(novelURL, KEY_NOVEL_URL)
 	local data = getJSON(url)
 
-	return NovelInfo {
-		title = data.title or "Unknown",
-		description = data.description or "",
-		imageURL = data.coverimage,
-		status = NovelStatus.UNKNOWN,
-		chapters = AsList(map(data.chapters or {}, function(c)
-			if type(c) ~= "table" then
-				return nil
-			end
+	local chapters_out = {}
+	local chapters_in = {}
+	if type(data) == "table" and type(data.chapters) == "table" then
+		chapters_in = data.chapters
+	end
+
+	for _, c in ipairs(chapters_in) do
+		if type(c) == "table" then
 			local num = c.number or c.chapternum or c.chapter or c.id
-			if num == nil then
-				return nil
-			end
 			local link = c.url or c.link
-			if type(link) ~= "string" then
-				return nil
+			if num ~= nil and type(link) == "string" then
+				chapters_out[#chapters_out + 1] = NovelChapter {
+					order = num,
+					title = "Chapter " .. tostring(num),
+					link = shrinkURL(link, KEY_CHAPTER_URL)
+				}
 			end
-			return NovelChapter {
-				order = num,
-				title = "Chapter " .. tostring(num),
-				link = shrinkURL(link, KEY_CHAPTER_URL)
-			}
-		end))
+		end
+	end
+
+	return NovelInfo {
+		title = (type(data) == "table" and data.title) or "Unknown",
+		description = (type(data) == "table" and data.description) or "",
+		imageURL = (type(data) == "table" and data.coverimage) or nil,
+		status = NovelStatus.UNKNOWN,
+		chapters = AsList(chapters_out)
 	}
 end
 
