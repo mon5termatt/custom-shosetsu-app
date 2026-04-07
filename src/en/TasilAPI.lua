@@ -51,8 +51,20 @@ local function expandURL(url, type)
 end
 
 local function getJSON(url)
-	local resp = RequestDocument(GET(url, headers(), nil))
-	return json.decode(resp:text())
+	-- Prefer dkjson's Shosetsu helpers which decode based on Content-Type.
+	-- This avoids returning nil when the server responds with HTML/error pages.
+	local ok, res = pcall(function()
+		return json.GET(url, headers(), nil)
+	end)
+	if not ok then
+		Log("TasilAPI", "json.GET failed: " .. tostring(res))
+		return {}
+	end
+	if type(res) ~= "table" then
+		Log("TasilAPI", "Non-JSON response for url=" .. tostring(url))
+		return {}
+	end
+	return res
 end
 
 local listings = {
@@ -91,6 +103,10 @@ end
 local function getPassage(chapterURL)
 	local url = expandURL(chapterURL, KEY_CHAPTER_URL)
 	local data = getJSON(url)
+	if type(data) ~= "table" then
+		return ""
+	end
+	-- API may return {error=...}
 	return data.content or ""
 end
 
