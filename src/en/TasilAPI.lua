@@ -107,7 +107,16 @@ local function getPassage(chapterURL)
 		return ""
 	end
 	-- API may return {error=...}
-	return data.content or ""
+	local html = data.content or ""
+	if type(html) ~= "string" or html == "" then
+		return ""
+	end
+
+	-- Shosetsu's HTML renderer tends to be more consistent when we return a
+	-- "page" extracted from a Document instead of a raw HTML string.
+	-- Also normalize breaks to improve paragraph separation.
+	html = html:gsub("<br%s*/?>%s*<br%s*/?>", "<br/><br/><br/>")
+	return pageOfElem(Document(html), true)
 end
 
 local function updateSetting(key, value)
