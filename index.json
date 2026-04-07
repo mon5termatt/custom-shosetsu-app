@@ -19,13 +19,13 @@
   "scripts": [
     {
       "id": 926041,
-      "name": "Tasil (API)",
+      "name": "Matts Ebook Reader (API)",
       "fileName": "TasilAPI",
       "imageURL": "",
       "lang": "en",
-      "ver": "0.1.4",
+      "ver": "0.1.5",
       "libVer": "1.0.0",
-      "md5": "4afd4d5f685edb4eb7f9dceea72c87d2bfff2d5217dd94b63ec04b1a1bf5d21d",
+      "md5": "e9e6e1fb4b37500cbfe7c76a1da4ae94aa45d807b39dd9dd05951ce6a567ca3c",
       "type": "LuaScript"
     }
   ]

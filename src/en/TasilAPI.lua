@@ -1,9 +1,9 @@
--- {"id":926041,"ver":"0.1.4","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
+-- {"id":926041,"ver":"0.1.5","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
 
 local json = Require("dkjson")
 
 local id = 926041
-local name = "Tasil (API)"
+local name = "Matts Ebook Reader (API)"
 
 -- Settings keys
 local SET_BASE_URL = 1
@@ -83,7 +83,7 @@ local listings = {
 }
 
 local function parseNovel(novelURL)
-	Log("TasilAPI", "parseNovel v0.1.1 url=" .. tostring(novelURL))
+	Log("TasilAPI", "parseNovel v0.1.5 url=" .. tostring(novelURL))
 	local url = expandURL(novelURL, KEY_NOVEL_URL)
 	local data = getJSON(url)
 
@@ -107,11 +107,22 @@ local function parseNovel(novelURL)
 		end
 	end
 
+	local st = NovelStatus.UNKNOWN
+	local raw_status = (type(data) == "table" and data.status) or ""
+	if type(raw_status) == "string" then
+		local s = raw_status:lower()
+		if s == "completed" then
+			st = NovelStatus.COMPLETED
+		elseif s == "ongoing" then
+			st = NovelStatus.PUBLISHING
+		end
+	end
+
 	return NovelInfo {
 		title = (type(data) == "table" and data.title) or "Unknown",
 		description = (type(data) == "table" and data.description) or "",
 		imageURL = (type(data) == "table" and data.coverimage) or nil,
-		status = NovelStatus.UNKNOWN,
+		status = st,
 		chapters = AsList(chapters_out)
 	}
 end
