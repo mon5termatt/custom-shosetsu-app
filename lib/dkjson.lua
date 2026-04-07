@@ -748,10 +748,17 @@ local json_mediatype = MediaType("application/json; charset=utf-8")
 
 function json.GET(url, ...)
 	local res = Request(GET(url, ...))
-	if res:headers():get("Content-Type"):sub(1, 16) == "application/json" then
-		return json.decode(res:body():string())
+	local ctype = res:headers():get("Content-Type")
+	local body = res:body():string()
+	if type(ctype) == "string" and ctype:sub(1, 16) == "application/json" then
+		return json.decode(body)
 	end
-	return res:body():string()
+	-- Best-effort: sometimes servers omit Content-Type even when body is JSON
+	local ok, decoded = pcall(function() return json.decode(body) end)
+	if ok and type(decoded) == "table" then
+		return decoded
+	end
+	return body
 end
 
 function json.POST(url, body, ...)
@@ -764,10 +771,16 @@ function json.POST(url, body, ...)
 	end
 	body = RequestBody(body, json_mediatype)
 	local res = Request(POST(url, headers, body, cctl))
-	if res:headers():get("Content-Type"):sub(1, 16) == "application/json" then
-		return json.decode(res:body():string())
+	local ctype = res:headers():get("Content-Type")
+	local respBody = res:body():string()
+	if type(ctype) == "string" and ctype:sub(1, 16) == "application/json" then
+		return json.decode(respBody)
 	end
-	return res:body():string()
+	local ok, decoded = pcall(function() return json.decode(respBody) end)
+	if ok and type(decoded) == "table" then
+		return decoded
+	end
+	return respBody
 end
 --  END  -- SHOSETSU ADDITIONS --
 
