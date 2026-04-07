@@ -23,9 +23,9 @@
       "fileName": "TasilAPI",
       "imageURL": "",
       "lang": "en",
-      "ver": "0.1.2",
+      "ver": "0.1.3",
       "libVer": "1.0.0",
-      "md5": "032928890baf14d643d78cb3975855dbe6c528dd9b2b47bfe75eac9f8c836e46",
+      "md5": "9c1d5732ed5badae5b051161beaf8c53d01890ae79ddb40b2fe35b032153c366",
       "type": "LuaScript"
     }
   ]

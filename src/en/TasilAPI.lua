@@ -1,4 +1,4 @@
--- {"id":926041,"ver":"0.1.2","libVer":"1.0.0","author":"you","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
+-- {"id":926041,"ver":"0.1.3","libVer":"1.0.0","author":"you","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
 
 local json = Require("dkjson")
 
@@ -19,7 +19,8 @@ local settingsModel = {
 	PasswordFilter(SET_API_KEY, "API Key (X-API-Key)")
 }
 
-local chapterType = ChapterType.HTML
+-- Use STRING so Shosetsu's spacing settings apply consistently.
+local chapterType = ChapterType.STRING
 
 local function baseURL()
 	return settings[SET_BASE_URL]
@@ -127,11 +128,29 @@ local function getPassage(chapterURL)
 		return ""
 	end
 
-	-- Shosetsu's HTML renderer tends to be more consistent when we return a
-	-- "page" extracted from a Document instead of a raw HTML string.
-	-- Also normalize breaks to improve paragraph separation.
-	html = html:gsub("<br%s*/?>%s*<br%s*/?>", "<br/><br/><br/>")
-	return pageOfElem(Document(html), true)
+	-- Convert our simple HTML into readable plain text:
+	-- - treat </div><div> boundaries as paragraph breaks
+	-- - convert <br> to newlines
+	-- - strip remaining tags
+	local text = html
+	text = text:gsub("\r\n", "\n"):gsub("\r", "\n")
+	text = text:gsub("<%s*/%s*div%s*>%s*<%s*div%s*>", "\n\n")
+	text = text:gsub("<br%s*/?>", "\n")
+	text = text:gsub("<[^>]+>", "")
+
+	-- Minimal HTML entity decoding for common entities
+	text = text:gsub("&nbsp;", " ")
+	text = text:gsub("&amp;", "&")
+	text = text:gsub("&lt;", "<")
+	text = text:gsub("&gt;", ">")
+	text = text:gsub("&quot;", "\"")
+	text = text:gsub("&#39;", "'")
+
+	-- Normalize whitespace
+	text = text:gsub("[ \t]+\n", "\n")
+	text = text:gsub("\n[ \t]+", "\n")
+	text = text:gsub("\n\n\n+", "\n\n")
+	return text
 end
 
 local function updateSetting(key, value)
