@@ -1,8 +1,8 @@
--- {"id":926041,"ver":"0.1.6","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
+-- {"id":926042,"ver":"0.1.7","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
 
 local json = Require("dkjson")
 
-local id = 926041
+local id = 926042
 local name = "Matts Ebook Reader (API)"
 
 -- Settings keys
@@ -31,6 +31,9 @@ local function apiKey()
 end
 
 local function headers()
+	if apiKey() == nil or tostring(apiKey()) == "" then
+		Log("TasilAPI", "Missing API key in settings")
+	end
 	local hb = HeadersBuilder()
 	hb:add("Accept", "application/json")
 	hb:add("X-API-Key", apiKey())
@@ -62,7 +65,9 @@ local function getJSON(url)
 		return {}
 	end
 	if type(res) ~= "table" then
-		Log("TasilAPI", "Non-JSON response for url=" .. tostring(url))
+		local preview = tostring(res)
+		if #preview > 180 then preview = preview:sub(1, 180) .. "..." end
+		Log("TasilAPI", "Non-JSON response for url=" .. tostring(url) .. " body=" .. preview)
 		return {}
 	end
 	return res
@@ -70,8 +75,16 @@ end
 
 local listings = {
 	Listing("Catalog", false, function()
+		if apiKey() == nil or tostring(apiKey()) == "" then
+			Log("TasilAPI", "Catalog requested but API key is empty")
+			return {}
+		end
 		local data = getJSON(expandURL("/api/shosetsu/catalog", KEY_NOVEL_URL))
-		local books = data and data.books or {}
+		if type(data) == "table" and data.error ~= nil then
+			Log("TasilAPI", "Catalog error=" .. tostring(data.error))
+			return {}
+		end
+		local books = (type(data) == "table" and type(data.books) == "table" and data.books) or {}
 		return map(books, function(b)
 			return Novel {
 				title = b.title,
@@ -83,7 +96,7 @@ local listings = {
 }
 
 local function parseNovel(novelURL)
-	Log("TasilAPI", "parseNovel v0.1.6 url=" .. tostring(novelURL))
+	Log("TasilAPI", "parseNovel v0.1.7 url=" .. tostring(novelURL))
 	local url = expandURL(novelURL, KEY_NOVEL_URL)
 	local data = getJSON(url)
 
