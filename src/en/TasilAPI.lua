@@ -1,4 +1,4 @@
--- {"id":926041,"ver":"0.1.5","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
+-- {"id":926041,"ver":"0.1.6","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
 
 local json = Require("dkjson")
 
@@ -31,10 +31,10 @@ local function apiKey()
 end
 
 local function headers()
-	return HeadersBuilder()
-		:add("Accept", "application/json")
-		:add("X-API-Key", apiKey())
-		:build()
+	local hb = HeadersBuilder()
+	hb:add("Accept", "application/json")
+	hb:add("X-API-Key", apiKey())
+	return hb:build()
 end
 
 local function shrinkURL(url, type)
@@ -83,7 +83,7 @@ local listings = {
 }
 
 local function parseNovel(novelURL)
-	Log("TasilAPI", "parseNovel v0.1.5 url=" .. tostring(novelURL))
+	Log("TasilAPI", "parseNovel v0.1.6 url=" .. tostring(novelURL))
 	local url = expandURL(novelURL, KEY_NOVEL_URL)
 	local data = getJSON(url)
 
