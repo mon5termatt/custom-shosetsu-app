@@ -91,10 +91,21 @@ local function parseNovel(novelURL)
 		imageURL = data.coverimage,
 		status = NovelStatus.UNKNOWN,
 		chapters = AsList(map(data.chapters or {}, function(c)
+			if type(c) ~= "table" then
+				return nil
+			end
+			local num = c.number or c.chapternum or c.chapter or c.id
+			if num == nil then
+				return nil
+			end
+			local link = c.url or c.link
+			if type(link) ~= "string" then
+				return nil
+			end
 			return NovelChapter {
-				order = c.number,
-				title = "Chapter " .. tostring(c.number),
-				link = shrinkURL(c.url, KEY_CHAPTER_URL)
+				order = num,
+				title = "Chapter " .. tostring(num),
+				link = shrinkURL(link, KEY_CHAPTER_URL)
 			}
 		end))
 	}
