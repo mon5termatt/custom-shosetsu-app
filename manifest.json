@@ -1,0 +1,16 @@
+{
+  "name": "Tasil (Flask) Source",
+  "id": "tasil-flask-source",
+  "version": "0.1.0",
+  "type": "shosetsu-source",
+  "description": "Scaffold Shosetsu source for the Tasil Flask novel reader.",
+  "author": "you",
+  "files": [
+    "source.lua"
+  ],
+  "settings": {
+    "base_url": "https://tasil.mon5termatt.com",
+    "api_key_header": "X-API-Key"
+  }
+}
+
