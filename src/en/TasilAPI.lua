@@ -1,4 +1,4 @@
--- {"id":926042,"ver":"0.1.7","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
+-- {"id":926042,"ver":"0.1.8","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
 
 local json = Require("dkjson")
 
@@ -96,7 +96,7 @@ local listings = {
 }
 
 local function parseNovel(novelURL)
-	Log("TasilAPI", "parseNovel v0.1.7 url=" .. tostring(novelURL))
+	Log("TasilAPI", "parseNovel v0.1.8 url=" .. tostring(novelURL))
 	local url = expandURL(novelURL, KEY_NOVEL_URL)
 	local data = getJSON(url)
 
@@ -131,11 +131,19 @@ local function parseNovel(novelURL)
 		end
 	end
 
+	local genres = {}
+	if type(data) == "table" and type(data.genres) == "table" then
+		genres = data.genres
+	elseif type(data) == "table" and type(data.category) == "string" then
+		genres = { data.category }
+	end
+
 	return NovelInfo {
 		title = (type(data) == "table" and data.title) or "Unknown",
 		description = (type(data) == "table" and data.description) or "",
 		imageURL = (type(data) == "table" and data.coverimage) or nil,
 		status = st,
+		genres = genres,
 		chapters = AsList(chapters_out)
 	}
 end

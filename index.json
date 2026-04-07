@@ -3,7 +3,7 @@
     {
       "id": 0,
       "name": "MON5TERMATT",
-      "desc": "Matts Ebook Reader source",
+      "desc": "Matts Ebook Reader (self-hosted, API-key protected)",
       "imageURL": "",
       "website": "https://github.com/mon5termatt/custom-shosetsu-app"
     }
@@ -19,13 +19,13 @@
   "scripts": [
     {
       "id": 926042,
-      "name": "Matts Ebook Reader (API)",
+      "name": "Matts Ebook Reader",
       "fileName": "TasilAPI",
-      "imageURL": "",
+      "imageURL": "https://mon5termatt.github.io/custom-shosetsu-app/icon.gif",
       "lang": "en",
-      "ver": "0.1.7",
+      "ver": "0.1.8",
       "libVer": "1.0.0",
-      "md5": "2cd93c7e8e77a971b4879bb8243f6de59f3f8902073c4f172478ba00d19cfc6a",
+      "md5": "9667ccfc8d733d105bbbfcc11eb37438c619b31dfbc733e12df5175c8b9a91ea",
       "type": "LuaScript"
     }
   ]
