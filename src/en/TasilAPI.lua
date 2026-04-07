@@ -1,4 +1,4 @@
--- {"id":926041,"ver":"0.1.3","libVer":"1.0.0","author":"you","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
+-- {"id":926041,"ver":"0.1.4","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
 
 local json = Require("dkjson")
 
