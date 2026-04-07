@@ -1,8 +1,8 @@
--- {"id":926040,"ver":"0.1.1","libVer":"1.0.0","author":"you","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
+-- {"id":926041,"ver":"0.1.2","libVer":"1.0.0","author":"you","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
 
 local json = Require("dkjson")
 
-local id = 926040
+local id = 926041
 local name = "Tasil (API)"
 
 -- Settings keys

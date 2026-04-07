@@ -18,14 +18,14 @@
   ],
   "scripts": [
     {
-      "id": 926040,
+      "id": 926041,
       "name": "Tasil (API)",
       "fileName": "TasilAPI",
       "imageURL": "",
       "lang": "en",
-      "ver": "0.1.1",
+      "ver": "0.1.2",
       "libVer": "1.0.0",
-      "md5": "03e7372027551a29decfeaa0ce2ba313130e2f18fa126194638fc347940f50d4",
+      "md5": "032928890baf14d643d78cb3975855dbe6c528dd9b2b47bfe75eac9f8c836e46",
       "type": "LuaScript"
     }
   ]
