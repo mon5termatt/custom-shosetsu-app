@@ -1,4 +1,4 @@
--- {"id":926042,"ver":"0.1.9","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
+-- {"id":926042,"ver":"0.1.10","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
 
 local json = Require("dkjson")
 
@@ -23,6 +23,86 @@ local settingsModel = {
 
 -- Use STRING so Shosetsu's spacing settings apply consistently.
 local chapterType = ChapterType.STRING
+
+-- Reserved paths (shrunk URLs) for in-app help when the API key is missing or rejected.
+local DUMMY_PREFIX = "/_tasil_ext/"
+local DUMMY_README_CHAPTER = DUMMY_PREFIX .. "readme"
+-- Extra line for parseNovel / listing (e.g. raw server error code).
+local catalog_help_extra = ""
+-- Last opened dummy help novel (used for the single "readme" chapter passage).
+local last_help_reason = "missing_key"
+
+local function dummyReasonFromNovelURL(novelURL)
+	if type(novelURL) ~= "string" then
+		return nil
+	end
+	return novelURL:match("^/_tasil_ext/([%w_]+)$")
+end
+
+local function dummyCatalogNovel(title, reasonKey, extra)
+	catalog_help_extra = extra or ""
+	return Novel {
+		title = title,
+		link = DUMMY_PREFIX .. reasonKey,
+		imageURL = nil,
+	}
+end
+
+local function helpNovelDescription(reasonKey)
+	local base = baseURL()
+	local extra = catalog_help_extra
+	local extraLine = ""
+	if type(extra) == "string" and extra ~= "" then
+		extraLine = "\n\nDetail: " .. extra
+	end
+	if reasonKey == "missing_key" then
+		return "No API key is set in this extension.\n\n"
+			.. "In Shosetsu: open this source's settings and paste your key into \"API Key (X-API-Key)\". "
+			.. "Create one on your site under /admin/api-keys if you need it.\n\n"
+			.. "Base URL should be your site root (example: " .. tostring(base) .. ")."
+			.. extraLine
+	end
+	if reasonKey == "missing_api_key" then
+		return "The server responded with missing_api_key (no usable X-API-Key).\n\n"
+			.. "Open this source's settings, set \"API Key (X-API-Key)\", save, then pull to refresh the catalog."
+			.. extraLine
+	end
+	if reasonKey == "invalid_api_key" then
+		return "The server rejected your API key (invalid_api_key).\n\n"
+			.. "Generate a new key under /admin/api-keys on your site, update it in Shosetsu, and refresh."
+			.. extraLine
+	end
+	if reasonKey == "fetch_failed" then
+		return "The catalog request did not return usable JSON.\n\n"
+			.. "Check Base URL (must match your site, including https). Check network and server logs."
+			.. extraLine
+	end
+	if reasonKey == "api_error" then
+		return "The catalog endpoint returned an error.\n\n"
+			.. "Fix the issue on the server or in extension settings, then refresh."
+			.. extraLine
+	end
+	return "Something went wrong loading the catalog.\n\nRefresh after fixing settings or connectivity." .. extraLine
+end
+
+local function helpNovelTitle(reasonKey)
+	if reasonKey == "missing_key" then
+		return "Tasil: set API key"
+	end
+	if reasonKey == "missing_api_key" then
+		return "Tasil: API key missing"
+	end
+	if reasonKey == "invalid_api_key" then
+		return "Tasil: invalid API key"
+	end
+	if reasonKey == "fetch_failed" then
+		return "Tasil: catalog unreachable"
+	end
+	if reasonKey == "api_error" then
+		return "Tasil: catalog error"
+	end
+	return "Tasil: help"
+end
 
 local function baseURL()
 	return settings[SET_BASE_URL]
@@ -83,16 +163,32 @@ end
 
 local listings = {
 	Listing("Catalog", false, function()
+		catalog_help_extra = ""
 		if apiKey() == "" then
-			Log("TasilAPI", "Catalog requested but API key is empty")
-			return {}
+			Log("TasilAPI", "Catalog: empty API key, showing helper entry")
+			return {
+				dummyCatalogNovel("Tasil — tap here: set API key", "missing_key", ""),
+			}
 		end
 		local data = getJSON(expandURL("/api/shosetsu/catalog", KEY_NOVEL_URL))
-		if type(data) == "table" and data.error ~= nil then
-			Log("TasilAPI", "Catalog error=" .. tostring(data.error))
-			return {}
+		if type(data) ~= "table" then
+			Log("TasilAPI", "Catalog: non-table response")
+			return {
+				dummyCatalogNovel("Tasil — tap here: catalog unreachable", "fetch_failed", tostring(data)),
+			}
 		end
-		local books = (type(data) == "table" and type(data.books) == "table" and data.books) or {}
+		if data.error ~= nil then
+			local err = tostring(data.error)
+			Log("TasilAPI", "Catalog error=" .. err)
+			if err == "missing_api_key" then
+				return { dummyCatalogNovel("Tasil — tap here: API key missing", "missing_api_key", "") }
+			end
+			if err == "invalid_api_key" then
+				return { dummyCatalogNovel("Tasil — tap here: invalid API key", "invalid_api_key", "") }
+			end
+			return { dummyCatalogNovel("Tasil — tap here: server error", "api_error", err) }
+		end
+		local books = (type(data.books) == "table" and data.books) or {}
 		return map(books, function(b)
 			return Novel {
 				title = b.title,
@@ -104,7 +200,25 @@ local listings = {
 }
 
 local function parseNovel(novelURL)
-	Log("TasilAPI", "parseNovel v0.1.9 url=" .. tostring(novelURL))
+	Log("TasilAPI", "parseNovel v0.1.10 url=" .. tostring(novelURL))
+	local reasonKey = dummyReasonFromNovelURL(novelURL)
+	if reasonKey ~= nil and reasonKey ~= "readme" then
+		last_help_reason = reasonKey
+		return NovelInfo {
+			title = helpNovelTitle(reasonKey),
+			description = helpNovelDescription(reasonKey),
+			imageURL = nil,
+			status = NovelStatus.UNKNOWN,
+			genres = { "Tasil" },
+			chapters = AsList({
+				NovelChapter {
+					order = 1,
+					title = "Instructions",
+					link = DUMMY_README_CHAPTER,
+				},
+			}),
+		}
+	end
 	local url = expandURL(novelURL, KEY_NOVEL_URL)
 	local data = getJSON(url)
 
@@ -157,6 +271,9 @@ local function parseNovel(novelURL)
 end
 
 local function getPassage(chapterURL)
+	if type(chapterURL) == "string" and chapterURL == DUMMY_README_CHAPTER then
+		return helpNovelDescription(last_help_reason)
+	end
 	local url = expandURL(chapterURL, KEY_CHAPTER_URL)
 	local data = getJSON(url)
 	if type(data) ~= "table" then
