@@ -1,4 +1,4 @@
--- {"id":926042,"ver":"0.1.10","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
+-- {"id":926042,"ver":"0.1.11","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
 
 local json = Require("dkjson")
 
@@ -200,7 +200,7 @@ local listings = {
 }
 
 local function parseNovel(novelURL)
-	Log("TasilAPI", "parseNovel v0.1.10 url=" .. tostring(novelURL))
+	Log("TasilAPI", "parseNovel v0.1.11 url=" .. tostring(novelURL))
 	local reasonKey = dummyReasonFromNovelURL(novelURL)
 	if reasonKey ~= nil and reasonKey ~= "readme" then
 		last_help_reason = reasonKey
@@ -324,7 +324,24 @@ local function normalizeSettingKey(key)
 end
 
 local function updateSetting(key, value)
-	settings[normalizeSettingKey(key)] = value
+	local k = normalizeSettingKey(key)
+	-- Shosetsu may call updateSetting before/after extension reload in an order where
+	-- the API key is briefly nil while the value is still saved in app storage; do not
+	-- wipe an already-applied key. (Catalog can also run before persisted settings replay.)
+	if k == SET_API_KEY then
+		-- Host sometimes passes nil while the key is still on disk; do not drop a key
+		-- we already received in this Lua session (common right after an extension update).
+		if value == nil and apiKey() ~= "" then
+			return
+		end
+		if value == nil then
+			settings[k] = ""
+			return
+		end
+		settings[k] = tostring(value)
+		return
+	end
+	settings[k] = value
 end
 
 return {
