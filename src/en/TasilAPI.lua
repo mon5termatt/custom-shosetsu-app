@@ -1,4 +1,4 @@
--- {"id":926042,"ver":"0.1.8","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
+-- {"id":926042,"ver":"0.1.9","libVer":"1.0.0","author":"MON5TERMATT","repo":"https://github.com/mon5termatt/custom-shosetsu-app","dep":["dkjson>=1.0.1"]}
 
 local json = Require("dkjson")
 
@@ -14,9 +14,11 @@ local settings = {
 	[SET_API_KEY] = ""
 }
 
+-- TextFilter (not PasswordFilter): some Shosetsu builds re-sync password fields as
+-- blank on open/background, which calls updateSetting with "" and wipes the stored key.
 local settingsModel = {
 	TextFilter(SET_BASE_URL, "Base URL (e.g. https://tasil.mon5termatt.com)"),
-	PasswordFilter(SET_API_KEY, "API Key (X-API-Key)")
+	TextFilter(SET_API_KEY, "API Key (X-API-Key)")
 }
 
 -- Use STRING so Shosetsu's spacing settings apply consistently.
@@ -27,11 +29,17 @@ local function baseURL()
 end
 
 local function apiKey()
-	return settings[SET_API_KEY]
+	local v = settings[SET_API_KEY]
+	if v == nil then
+		return ""
+	end
+	local s = tostring(v)
+	local trimmed = s:match("^%s*(.-)%s*$")
+	return trimmed or s
 end
 
 local function headers()
-	if apiKey() == nil or tostring(apiKey()) == "" then
+	if apiKey() == "" then
 		Log("TasilAPI", "Missing API key in settings")
 	end
 	local hb = HeadersBuilder()
@@ -75,7 +83,7 @@ end
 
 local listings = {
 	Listing("Catalog", false, function()
-		if apiKey() == nil or tostring(apiKey()) == "" then
+		if apiKey() == "" then
 			Log("TasilAPI", "Catalog requested but API key is empty")
 			return {}
 		end
@@ -96,7 +104,7 @@ local listings = {
 }
 
 local function parseNovel(novelURL)
-	Log("TasilAPI", "parseNovel v0.1.8 url=" .. tostring(novelURL))
+	Log("TasilAPI", "parseNovel v0.1.9 url=" .. tostring(novelURL))
 	local url = expandURL(novelURL, KEY_NOVEL_URL)
 	local data = getJSON(url)
 
@@ -185,8 +193,21 @@ local function getPassage(chapterURL)
 	return text
 end
 
+local function normalizeSettingKey(key)
+	if type(key) == "number" then
+		return key
+	end
+	if type(key) == "string" then
+		local n = tonumber(key)
+		if n ~= nil then
+			return n
+		end
+	end
+	return key
+end
+
 local function updateSetting(key, value)
-	settings[key] = value
+	settings[normalizeSettingKey(key)] = value
 end
 
 return {

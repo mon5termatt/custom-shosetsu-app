@@ -23,9 +23,9 @@
       "fileName": "TasilAPI",
       "imageURL": "https://mon5termatt.github.io/custom-shosetsu-app/icon.gif",
       "lang": "en",
-      "ver": "0.1.8",
+      "ver": "0.1.9",
       "libVer": "1.0.0",
-      "md5": "9667ccfc8d733d105bbbfcc11eb37438c619b31dfbc733e12df5175c8b9a91ea",
+      "md5": "2b1f0c0d9fa1c18b00cc05ea674fbf0d",
       "type": "LuaScript"
     }
   ]

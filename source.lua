@@ -1,4 +1,4 @@
--- {"id":926040,"ver":"0.1.0","libVer":"1.0.0","author":"you","repo":"","dep":["dkjson>=1.0.0"]}
+-- {"id":926040,"ver":"0.1.1","libVer":"1.0.0","author":"you","repo":"","dep":["dkjson>=1.0.0"]}
 
 local json = Require("dkjson")
 
@@ -16,7 +16,7 @@ local settings = {
 
 local settingsModel = {
 	TextFilter(SET_BASE_URL, "Base URL (e.g. https://tasil.mon5termatt.com)"),
-	PasswordFilter(SET_API_KEY, "API Key (X-API-Key)")
+	TextFilter(SET_API_KEY, "API Key (X-API-Key)")
 }
 
 local chapterType = ChapterType.HTML
@@ -26,7 +26,13 @@ local function baseURL()
 end
 
 local function apiKey()
-	return settings[SET_API_KEY]
+	local v = settings[SET_API_KEY]
+	if v == nil then
+		return ""
+	end
+	local s = tostring(v)
+	local trimmed = s:match("^%s*(.-)%s*$")
+	return trimmed or s
 end
 
 local function headers()
@@ -100,8 +106,21 @@ local function getPassage(chapterURL)
 	return data.content or ""
 end
 
+local function normalizeSettingKey(key)
+	if type(key) == "number" then
+		return key
+	end
+	if type(key) == "string" then
+		local n = tonumber(key)
+		if n ~= nil then
+			return n
+		end
+	end
+	return key
+end
+
 local function updateSetting(key, value)
-	settings[key] = value
+	settings[normalizeSettingKey(key)] = value
 end
 
 return {
